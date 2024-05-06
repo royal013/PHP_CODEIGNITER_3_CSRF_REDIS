@@ -43,7 +43,7 @@ class csv_model extends CI_Model
     }
     function insert_batch_code($data)
     {
-        $this->db->insert('gift_card', $data);
+        $this->db->insert('batchcode', $data);
     }
     
 }

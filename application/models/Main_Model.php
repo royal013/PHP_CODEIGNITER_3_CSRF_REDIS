@@ -53,23 +53,62 @@ class Main_Model extends CI_Model
     public function check_state_status($state)
     {
         $query = $this->db->select('isActive')->from('state_detail')->where('state', $state)->get();
-        $res=$query->row();
+        $res = $query->row();
         return $res->isActive;
     }
-    public function get_quart_val($state){
-        $query=$this->db->select('quart')->from('state_detail')->where('state',$state)->get();
-        $res=$query->row();
+    public function get_quart_val($state)
+    {
+        $query = $this->db->select('quart')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
         return $res->quart;
     }
-    public function get_pint_val($state){
-        $query=$this->db->select('pint')->from('state_detail')->where('state',$state)->get();
-        $res=$query->row();
+    public function get_pint_val($state)
+    {
+        $query = $this->db->select('pint')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
         return $res->pint;
     }
-    public function get_nip_val($state){
-        $query=$this->db->select('nip')->from('state_detail')->where('state',$state)->get();
-        $res=$query->row();
+    public function get_nip_val($state)
+    {
+        $query = $this->db->select('nip')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
         return $res->nip;
     }
+    public function check_batchCode($val)
+    {
+        $query = $this->db->select('*')->from('batchcode')->where('batch_code', $val)->get();
+        if ($query->num_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function batchCode_state($batchcode, $state)
+    {
+        $query = $this->db->select('*')->from('batchcode')->where(array('batch_code' => $batchcode, 'state' => $state))->get();
+        if ($query->num_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function getStateType($state)
+    {
+        $query = $this->db->select('type')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->type;
+    }
+
+
+    public function getGiftCardForBatchCode($state)
+    {
+        $query = $this->db->select('*')->from('gift_card')->where(array('state' => $state, 'is_used' => '0'))->order_by('RAND ()')->Limit(1)->get();
+        if ($query->num_rows() > 0) {
+            return $query->row_array();
+        } else {
+            return false;
+        }
+    }
+
 }
 ?>

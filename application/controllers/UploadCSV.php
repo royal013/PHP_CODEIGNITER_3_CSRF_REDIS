@@ -79,7 +79,7 @@ class UploadCSV extends CI_Controller
         $config['allowed_types'] = 'csv';
         $config['max_size'] = '10000';
 
-        
+
         $this->load->library('upload', $config);
 
 
@@ -93,7 +93,7 @@ class UploadCSV extends CI_Controller
         } else {
             $file_data = $this->upload->data();
             $file_path = './uploads/coupons/' . $file_data['file_name'];
-            
+
 
             if ($this->csvimport->get_array($file_path)) {
                 $csv_array = $this->csvimport->get_array($file_path);
@@ -135,7 +135,7 @@ class UploadCSV extends CI_Controller
         $config['allowed_types'] = 'csv';
         $config['max_size'] = '10000';
 
-        
+
         $this->load->library('upload', $config);
 
 
@@ -149,12 +149,12 @@ class UploadCSV extends CI_Controller
         } else {
             $file_data = $this->upload->data();
             $file_path = './uploads/giftcard/' . $file_data['file_name'];
-            
+
 
             if ($this->csvimport->get_array($file_path)) {
                 $csv_array = $this->csvimport->get_array($file_path);
 
-                $expected_headers = array('product_name', 'amount','Gift_card_number','validity','card_pin','terms_condition','currency_code','is_used','State');
+                $expected_headers = array('product_name', 'amount', 'Gift_card_number', 'validity', 'card_pin', 'terms_condition', 'currency_code', 'is_used', 'State');
 
                 $csv_headers = array_keys($csv_array[0]);
                 if ($csv_headers !== $expected_headers) {
@@ -170,7 +170,7 @@ class UploadCSV extends CI_Controller
                         'product_name' => $row['product_name'],
                         'amount' => $row['amount'],
                         'Gift_card_number' => $row['Gift_card_number'],
-                        'State'=>$row['State'],
+                        'State' => $row['State'],
                         'validity' => $validity_date,
                         'card_pin' => $row['card_pin'],
                         'terms_condition' => $row['terms_condition'],
@@ -192,17 +192,17 @@ class UploadCSV extends CI_Controller
     }
     function uploadBatchCode()
     {
-       
+
         $data['error'] = '';
         $config['upload_path'] = './uploads/batchcode/';
         $config['allowed_types'] = 'csv';
         $config['max_size'] = '10000';
 
-        
+
         $this->load->library('upload', $config);
 
 
-        if (!$this->upload->do_upload('batchcode')) {
+        if (!$this->upload->do_upload('batchCodeFile')) {
             $data['error'] = $this->upload->display_errors();
             echo '<pre>';
             print_r($data);
@@ -212,12 +212,12 @@ class UploadCSV extends CI_Controller
         } else {
             $file_data = $this->upload->data();
             $file_path = './uploads/batchcode/' . $file_data['file_name'];
-            
+
 
             if ($this->csvimport->get_array($file_path)) {
                 $csv_array = $this->csvimport->get_array($file_path);
 
-                $expected_headers = array('batch_code','state');
+                $expected_headers = array('batch_code', 'state');
 
                 $csv_headers = array_keys($csv_array[0]);
                 if ($csv_headers !== $expected_headers) {
