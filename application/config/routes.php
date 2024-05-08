@@ -54,6 +54,17 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 $route[''] = 'UploadCSV/index';
-$route['register']='Main/load_register_page';
-$route['hadleRegister']='Main/handle_register';
+$route['register'] = 'Main/load_register_page';
+
+//coupon_logic
+$route['AS'] = 'Main/register_with_coupon';
+$route['TR'] = 'Main/register_with_coupon';
+
+//batchcode_logic
+$route['RJ'] = 'Main/register_with_batchcode';
+$route['MP'] = 'Main/register_with_batchcode';
+
+//coupon_validate_and_direct_giftcard
+$route['HR'] = 'Main/direct_giftcard';
+
 

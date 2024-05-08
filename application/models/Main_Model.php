@@ -12,7 +12,10 @@ class Main_Model extends CI_Model
     }
     public function update_coupon_card($coupon, $user_id)
     {
-        $this->db->where('coupon', $coupon)->update('coupons', array('user_id' => $user_id, 'is_used' => '1', 'used_at' => date('Y-m-d H:i:s')));
+        date_default_timezone_set('Asia/Kolkata');
+        $time = date('H:i:s');
+        $date = date('Y:m:d');
+        $this->db->where('coupon', $coupon)->update('coupons', array('user_id' => $user_id, 'is_used' => '1', 'used_date' => $date, 'used_time' => $time));
     }
     public function get_coupen_type($coupon)
     {
@@ -31,20 +34,37 @@ class Main_Model extends CI_Model
             return false;
         }
     }
-
+    public function get_random_giftCard($state)
+    {
+        $query = $this->db->select('*')->from('gift_card')->where(array('State' => $state, 'is_used' => '0'))->order_by('RAND()')->limit(1)->get();
+        if ($query->num_rows() > 0) {
+            $val = $query->row_array();
+            return $val;
+        } else {
+            return false;
+        }
+    }
     public function update_gift_card_val($id, $user_id)
     {
-        $this->db->where('id', $id)->update('gift_card', array('user_id' => $user_id, 'is_used' => '1', 'redemeed_at' => date('Y-m-d H:i:s')));
+        date_default_timezone_set('Asia/Kolkata');
+        $time = date('H:i:s');
+        $date = date('Y:m:d');
+        $this->db->where('id', $id)->update('gift_card', array('user_id' => $user_id, 'is_used' => '1', 'redemeed_date' => $date, 'redemmed_time' => $time));
     }
 
     public function register_user($fname, $lname, $phone, $age, $state)
     {
+        date_default_timezone_set('Asia/Kolkata');
+        $date = date('Y-m-d');
+        $time = date('H:i:s');
         $data = array(
             'first_name' => $fname,
             'last_name' => $lname,
             'phone_number' => $phone,
             'age' => $age,
-            'state' => $state
+            'state' => $state,
+            'created_date' => $date,
+            'created_time' => $time
         );
         $this->db->insert('register_user', $data);
         return $this->db->insert_id();
@@ -108,6 +128,19 @@ class Main_Model extends CI_Model
         } else {
             return false;
         }
+    }
+    public function get_minimum_age($state)
+    {
+        $query = $this->db->select('min_age')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->min_age;
+    }
+    public function redeemed_details($user_id, $coupon, $gift_card_id)
+    {
+        date_default_timezone_set('Asia/Kolkata');
+        $date = date('Y:m:d');
+        $time = date('H:i:s');
+        $this->db->insert('redeemed_details', array('user_id' => $user_id, 'redeemed_coupon' => $coupon, 'redeemed_giftcard' => $gift_card_id, 'redeemed_date' => $date, 'redeemed_time' => $time));
     }
 
 }

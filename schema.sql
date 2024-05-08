@@ -1,11 +1,3 @@
-CREATE TABLE user (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    missed_call_number BIGINT,
-    mobile_number BIGINT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    message_sent ENUM('1', '0') DEFAULT '0'
-);
 
 create table coupons(
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,4 +51,13 @@ create table batchcode(
     user_id INT,
     redemmed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active INT
+);
+
+CREATE TABLE redeemed_details (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    redeemed_coupon VARCHAR(255),
+    redeemed_giftcard VARCHAR(255),
+    redeemed_date DATE,
+    redeemed_time TIME
 );
