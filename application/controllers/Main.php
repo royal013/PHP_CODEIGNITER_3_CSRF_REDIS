@@ -1,9 +1,4 @@
 <?php
-
-// header("Access-Control-Allow-Origin: *");
-// header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
-// header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
 class Main extends CI_Controller
 {
   public function __construct()
@@ -19,15 +14,12 @@ class Main extends CI_Controller
   {
     $this->load->view("Register");
   }
-
   public function check_state_type()
   {
     $type = $this->input->post("state");
     $val = $this->Main_Model->getStateType($type);
     echo $val;
   }
-
-
   public function register_with_coupon()
   {
     $fname = $this->input->post('fname', TRUE);
@@ -37,8 +29,9 @@ class Main extends CI_Controller
     $coupon = $this->input->post('coupon', TRUE);
     $validate = substr($coupon, 0, 2);
     $state = $this->input->post('state', TRUE);
-    $stateType = $this->Main_Model->getStateType($state);
     $min_age = $this->Main_Model->get_minimum_age($state);
+    $daily_limit = $this->Main_Model->get_daily_limit($state);
+    $campaign_limit = $this->Main_Model->get_campaign_limit($state);
     if (strlen($phone) != 10) {
       $this->session->set_flashdata('error', 'Phone Number Invalid');
       redirect(base_url('register'));
@@ -54,13 +47,23 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if ($this->session->userdata('phone' . $phone) >= 1) {
+    if ($this->session->userdata($state . $phone) >= 1) {
       $this->session->set_flashdata('error', 'Limit from this phone number exceeded');
       redirect(base_url('register'));
       exit();
     }
-    if (!$this->session->userdata($phone)) {
-      $this->session->set_userdata($phone, 0);
+    if ($this->Main_Model->check_user_phone_for_daily_limit($phone, $state) >= $daily_limit) {
+      $this->session->set_flashdata('error', 'Daily Limit from this phone number exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->Main_Model->check_user_phone_for_campaign_limit($state, $phone) >= $campaign_limit) {
+      $this->session->set_flashdata('error', 'Campaign Limit Exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if (!$this->session->userdata($state . $phone)) {
+      $this->session->set_userdata($state . $phone, 0);
     }
     if ($this->Main_Model->check_state_status($state) === '0') {
       $this->session->set_flashdata('error', 'state inactive');
@@ -73,10 +76,18 @@ class Main extends CI_Controller
       exit();
     }
     if ($this->Main_Model->verify_coupon($coupon)) {
+      $thresholdValue = $this->Main_Model->getThresholdValue($state);
+      $totalActiveRegistration = $this->Main_Model->getTotalActiveRegistration($state);
+      if ($totalActiveRegistration >= $thresholdValue) {
+        $this->session->set_flashdata('error', 'Threshold Value for this state reached');
+        redirect(base_url('register'));
+        exit();
+      }
       $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+      $this->Main_Model->update_total_registration($state);
       //INCREMENTING THE SESSION DATA
-      $count = $this->session->userdata('phone' . $phone);
-      $this->session->set_userdata('phone' . $phone, $count + 1);
+      $count = $this->session->userdata($state . $phone);
+      $this->session->set_userdata($state . $phone, $count + 1);
       $coupen_type = $this->Main_Model->get_coupen_type($coupon);
       $val = 0;
       switch ($coupen_type) {
@@ -97,7 +108,7 @@ class Main extends CI_Controller
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
         $this->Main_Model->update_coupon_card($coupon, $user_id);
         $this->Main_Model->redeemed_details($user_id, $coupon, $output['id']);
-        echo $this->session->userdata('phone' . $phone);
+        echo $this->session->userdata($state . $phone);
         echo '<pre>';
         print_r($output);
         echo '</pre>';
@@ -111,7 +122,6 @@ class Main extends CI_Controller
       exit();
     }
   }
-
   public function register_with_batchcode()
   {
     $fname = $this->input->post('fname', TRUE);
@@ -120,8 +130,9 @@ class Main extends CI_Controller
     $age = $this->input->post('age', TRUE);
     $batchcode = $this->input->post('batchcode', TRUE);
     $state = $this->input->post('state', TRUE);
-    $stateType = $this->Main_Model->getStateType($state);
     $min_age = $this->Main_Model->get_minimum_age($state);
+    $daily_limit = $this->Main_Model->get_daily_limit($state);
+    $campaign_limit = $this->Main_Model->get_campaign_limit($state);
     if (strlen($phone) != 10) {
       $this->session->set_flashdata('error', 'Phone Number Invalid');
       redirect(base_url('register'));
@@ -137,13 +148,23 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if ($this->session->userdata('phone' . $phone) >= 1) {
+    if ($this->session->userdata($state . $phone) >= 1) {
       $this->session->set_flashdata('error', 'Limit from this phone number exceeded');
       redirect(base_url('register'));
       exit();
     }
-    if (!$this->session->userdata($phone)) {
-      $this->session->set_userdata($phone, 0);
+    if ($this->Main_Model->check_user_phone_for_daily_limit($phone, $state) >= $daily_limit) {
+      $this->session->set_flashdata('error', 'Daily Limit from this phone number exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->Main_Model->check_user_phone_for_campaign_limit($state, $phone) >= $campaign_limit) {
+      $this->session->set_flashdata('error', 'Campaign Limit Exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if (!$this->session->userdata($state . $phone)) {
+      $this->session->set_userdata($state . $phone, 0);
     }
     if ($this->Main_Model->check_state_status($state) === '0') {
       $this->session->set_flashdata('error', 'state inactive');
@@ -160,14 +181,23 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
+    $thresholdValue = $this->Main_Model->getThresholdValue($state);
+    $totalActiveRegistration = $this->Main_Model->getTotalActiveRegistration($state);
+    if ($totalActiveRegistration >= $thresholdValue) {
+      $this->session->set_flashdata('error', 'Threshold Value for this state reached');
+      redirect(base_url('register'));
+      exit();
+    }
     $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-    $count = $this->session->userdata('phone' . $phone);
-    $this->session->set_userdata('phone' . $phone, $count + 1);
+    $this->Main_Model->update_total_registration($state);
+    $count = $this->session->userdata($state . $phone);
+    $this->session->set_userdata($state . $phone, $count + 1);
     $output = $this->Main_Model->getGiftCardForBatchCode($state);
     if ($output) {
       echo $output['id'] . '<br>';
       echo $user_id . '<br>';
       $this->Main_Model->update_gift_card_val($output['id'], $user_id);
+      $this->Main_Model->redeemed_details($user_id, $batchcode, $output['id']);
       echo '<pre>';
       print_r($output);
       echo '</pre>';
@@ -176,8 +206,6 @@ class Main extends CI_Controller
       exit();
     }
   }
-
-
   public function direct_giftcard()
   {
     $fname = $this->input->post('fname', TRUE);
@@ -185,11 +213,11 @@ class Main extends CI_Controller
     $phone = $this->input->post('phone', TRUE);
     $age = $this->input->post('age', TRUE);
     $coupon = $this->input->post('coupon', TRUE);
-    $batchcode = $this->input->post('batchcode', TRUE);
     $validate = substr($coupon, 0, 2);
     $state = $this->input->post('state', TRUE);
-    $stateType = $this->Main_Model->getStateType($state);
     $min_age = $this->Main_Model->get_minimum_age($state);
+    $daily_limit = $this->Main_Model->get_daily_limit($state);
+    $campaign_limit = $this->Main_Model->get_campaign_limit($state);
     if (strlen($phone) != 10) {
       $this->session->set_flashdata('error', 'Phone Number Invalid');
       redirect(base_url('register'));
@@ -205,8 +233,18 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if ($this->session->userdata('phone' . $phone) >= 1) {
+    if ($this->session->userdata($state . $phone) >= 1) {
       $this->session->set_flashdata('error', 'Limit from this phone number exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->Main_Model->check_user_phone_for_daily_limit($phone, $state) >= $daily_limit) {
+      $this->session->set_flashdata('error', 'Daily Limit from this phone number exceeded');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->Main_Model->check_user_phone_for_campaign_limit($state, $phone) >= $campaign_limit) {
+      $this->session->set_flashdata('error', 'Campaign Limit Exceeded');
       redirect(base_url('register'));
       exit();
     }
@@ -224,14 +262,22 @@ class Main extends CI_Controller
       exit();
     }
     if ($this->Main_Model->verify_coupon($coupon)) {
+      $thresholdValue = $this->Main_Model->getThresholdValue($state);
+      $totalActiveRegistration = $this->Main_Model->getTotalActiveRegistration($state);
+      if ($totalActiveRegistration >= $thresholdValue) {
+        $this->session->set_flashdata('error', 'Threshold Value for this state reached');
+        redirect(base_url('register'));
+        exit();
+      }
       $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-      $count = $this->session->userdata('phone' . $phone);
-      $this->session->set_userdata('phone' . $phone, $count + 1);
+      $this->Main_Model->update_total_registration($state);
+      $count = $this->session->userdata($state . $phone);
+      $this->session->set_userdata($state . $phone, $count + 1);
       $output = $this->Main_Model->get_random_giftCard($state);
       if ($output) {
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
         $this->Main_Model->update_coupon_card($coupon, $user_id);
-        echo $this->session->userdata('phone' . $phone);
+        echo $this->session->userdata($state . $phone);
         echo '<pre>';
         print_r($output);
         echo '</pre>';

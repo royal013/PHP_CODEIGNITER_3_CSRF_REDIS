@@ -140,8 +140,51 @@ class Main_Model extends CI_Model
         date_default_timezone_set('Asia/Kolkata');
         $date = date('Y:m:d');
         $time = date('H:i:s');
-        $this->db->insert('redeemed_details', array('user_id' => $user_id, 'redeemed_coupon' => $coupon, 'redeemed_giftcard' => $gift_card_id, 'redeemed_date' => $date, 'redeemed_time' => $time));
+        $this->db->insert('redeemed_details', array('user_id' => $user_id, 'redeemed_coupon/batchcode' => $coupon, 'redeemed_giftcard_id' => $gift_card_id, 'redeemed_date' => $date, 'redeemed_time' => $time));
     }
 
+
+    public function check_user_phone_for_daily_limit($phone, $state)
+    {
+        date_default_timezone_set('Asia/Kolkata');
+        $date = date('Y-m-d');
+        $query = $this->db->select('*')->from('register_user')->where(array('phone_number' => $phone, 'state' => $state, 'created_date' => $date))->get();
+        return $query->num_rows();
+    }
+    public function check_user_phone_for_campaign_limit($phone, $state)
+    {
+        $query = $this->db->select('*')->from('register_user')->where(array('phone_number' => $phone, 'state' => $state))->get();
+        return $query->num_rows();
+    }
+
+    public function get_daily_limit($state)
+    {
+        $query = $this->db->select("daily_limit_per_user")->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->daily_limit_per_user;
+    }
+    public function get_campaign_limit($state)
+    {
+        $query = $this->db->select('campaign_limit_per_user')->from("state_detail")->where("state", $state)->get();
+        $res = $query->row();
+        return $res->campaign_limit_per_user;
+    }
+    public function update_total_registration($state)
+    {
+        $query = $this->db->set('active_registration', 'active_registration + 1', false)->where('state', $state)->update('state_detail');
+    }
+    public function getThresholdValue($state)
+    {
+        $query = $this->db->select('threshold')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->threshold;
+
+    }
+    public function getTotalActiveRegistration($state)
+    {
+        $query = $this->db->select('active_registration')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->active_registration;
+    }
 }
 ?>
