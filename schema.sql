@@ -41,7 +41,15 @@ CREATE TABLE state_detail(
     quart INT,
     pint INT,
     nip INT,
-    isActive ENUM('0','1') DEFAULT '0'
+    min_age INT,
+    isActive ENUM('0','1') DEFAULT '0',
+    type varchar(255),
+    daily_limit_per_user INT,
+    campaign_limit_per_user INT,
+    active_registration INT,
+    threshold INT,
+    campaign_start date,
+    campaign_end date
 );
 
 create table batchcode(

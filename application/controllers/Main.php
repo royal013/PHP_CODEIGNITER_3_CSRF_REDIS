@@ -88,7 +88,6 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-
     if ($this->Main_Model->check_user_phone_for_campaign_limit($state, $phone) >= $campaign_limit) {
       $this->session->set_flashdata('error', 'Campaign Limit Exceeded');
       redirect(base_url('register'));
@@ -121,11 +120,7 @@ class Main extends CI_Controller
         redirect(base_url('register'));
         exit();
       }
-      $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-      $this->Main_Model->update_total_registration($state);
-      //INCREMENTING THE SESSION DATA
-      $count = $this->session->userdata($state . $phone);
-      $this->session->set_userdata($state . $phone, $count + 1);
+
       $coupen_type = $this->Main_Model->get_coupen_type($state, $coupon);
       $val = 0;
       switch ($coupen_type) {
@@ -143,6 +138,10 @@ class Main extends CI_Controller
       }
       $output = $this->Main_Model->get_all($state, $val);
       if ($output) {
+        $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+        $count = $this->session->userdata($state . $phone);
+        $this->session->set_userdata($state . $phone, $count + 1);
+        $this->Main_Model->update_total_registration($state);
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
         $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
         $this->Main_Model->update_user_case1($user_id, $coupon, $coupen_type, $output['product_name'], $output['card_pin']);
@@ -241,12 +240,12 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-    $this->Main_Model->update_total_registration($state);
-    $count = $this->session->userdata($state . $phone);
-    $this->session->set_userdata($state . $phone, $count + 1);
     $output = $this->Main_Model->getGiftCardForBatchCode($state);
     if ($output) {
+      $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+      $this->Main_Model->update_total_registration($state);
+      $count = $this->session->userdata($state . $phone);
+      $this->session->set_userdata($state . $phone, $count + 1);
       $this->Main_Model->update_gift_card_val($output['id'], $user_id);
       $this->Main_Model->update_user_case2($user_id, $batchcode, $output['product_name'], $output['card_pin']);
       // $this->Main_Model->redeemed_details($user_id, $batchcode, $output['id']);
@@ -326,12 +325,12 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if (!($validate === $state)) {
+    if (!$this->Main_Model->validate_coupon($state, $coupon)) {
       $this->session->set_flashdata('error', 'Invalid coupon for this state');
       redirect(base_url('register'));
       exit();
     }
-    if ($this->Main_Model->verify_coupon($coupon)) {
+    if ($this->Main_Model->verify_coupon($state, $coupon)) {
       $thresholdValue = $this->Main_Model->getThresholdValue($state);
       $totalActiveRegistration = $this->Main_Model->getTotalActiveRegistration($state);
       if ($totalActiveRegistration >= $thresholdValue) {
@@ -339,14 +338,14 @@ class Main extends CI_Controller
         redirect(base_url('register'));
         exit();
       }
-      $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-      $this->Main_Model->update_total_registration($state);
-      $count = $this->session->userdata($state . $phone);
-      $this->session->set_userdata($state . $phone, $count + 1);
       $output = $this->Main_Model->get_random_giftCard($state);
       if ($output) {
+        $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+        $this->Main_Model->update_total_registration($state);
+        $count = $this->session->userdata($state . $phone);
+        $this->session->set_userdata($state . $phone, $count + 1);
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
-        $this->Main_Model->update_coupon_card($coupon, $user_id);
+        $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
         $this->Main_Model->update_user_case3($user_id, $coupon, $output['product_name'], $output['card_pin']);
         $this->load->view('ThankYou');
         // echo $this->session->userdata($state . $phone);
@@ -429,17 +428,17 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if (!($validate === $state)) {
+    if (!$this->Main_Model->validate_coupon($state, $coupon)) {
       $this->session->set_flashdata('error', 'Invalid coupon for this state');
       redirect(base_url('register'));
       exit();
     }
-    if ($this->Main_Model->verify_coupon($coupon)) {
+    if ($this->Main_Model->verify_coupon($state, $coupon)) {
       $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
       $this->Main_Model->update_total_registration($state);
       $count = $this->session->userdata($state . $phone);
       $this->session->set_userdata($state . $phone, $count + 1);
-      $this->Main_Model->update_coupon_card($coupon, $user_id);
+      $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
       $this->Main_Model->update_user_case4($user_id, $coupon);
       $this->load->view('ThankYou');
 
@@ -519,7 +518,7 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    if ($this->Main_Model->verify_coupon($coupon)) {
+    if ($this->Main_Model->verify_coupon($state, $coupon)) {
       $thresholdValue = $this->Main_Model->getThresholdValue($state);
       $totalActiveRegistration = $this->Main_Model->getTotalActiveRegistration($state);
       if ($totalActiveRegistration >= $thresholdValue) {
@@ -527,12 +526,8 @@ class Main extends CI_Controller
         redirect(base_url('register'));
         exit();
       }
-      $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
-      $this->Main_Model->update_total_registration($state);
-      //INCREMENTING THE SESSION DATA
-      $count = $this->session->userdata($state . $phone);
-      $this->session->set_userdata($state . $phone, $count + 1);
-      $coupen_type = $this->Main_Model->get_coupen_type($coupon);
+
+      $coupen_type = $this->Main_Model->get_coupen_type($state, $coupon);
       $val = 0;
       switch ($coupen_type) {
         case 'Quart':
@@ -549,8 +544,12 @@ class Main extends CI_Controller
       }
       $output = $this->Main_Model->get_all($state, $val);
       if ($output) {
+        $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+        $this->Main_Model->update_total_registration($state);
+        $count = $this->session->userdata($state . $phone);
+        $this->session->set_userdata($state . $phone, $count + 1);
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
-        $this->Main_Model->update_coupon_card($coupon, $user_id);
+        $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
         $this->Main_Model->update_user_case1($user_id, $coupon, $coupen_type, $output['product_name'], $output['card_pin']);
         $this->load->view('ThankYou');
         // echo $this->session->userdata($state . $phone);
@@ -558,7 +557,11 @@ class Main extends CI_Controller
         // print_r($output);
         // echo '</pre>';
       } else {
-        $this->Main_Model->update_coupon_card($coupon, $user_id);
+        $user_id = $this->Main_Model->register_user($fname, $lname, $phone, $age, $state);
+        $this->Main_Model->update_total_registration($state);
+        $count = $this->session->userdata($state . $phone);
+        $this->session->set_userdata($state . $phone, $count + 1);
+        $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
         $this->Main_Model->update_user_case4($user_id, $coupon);
         $this->load->view('ThankYou');
       }
