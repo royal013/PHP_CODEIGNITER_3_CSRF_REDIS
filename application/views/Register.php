@@ -57,6 +57,7 @@ if ($this->session->flashdata('error')) { ?>
                             <option value="RJ">Rajasthan</option>
                             <option value="MP">Madhya Pradesh</option>
                             <option value="HR">Haryana</option>
+                            <option value="WB">West Bengal</option>
                         </select>
                     </div>
                     <div class="mb-3" id="couponField">

@@ -67,4 +67,5 @@ $route['MP'] = 'Main/register_with_batchcode';
 //coupon_validate_and_direct_giftcard
 $route['HR'] = 'Main/direct_giftcard';
 
-
+//coupon_validate_and_registration_no_giftcard
+$route['WB'] = 'Main/no_giftcard';

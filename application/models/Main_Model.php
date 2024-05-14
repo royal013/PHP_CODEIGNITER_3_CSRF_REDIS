@@ -151,7 +151,7 @@ class Main_Model extends CI_Model
         $query = $this->db->select('*')->from('register_user')->where(array('phone_number' => $phone, 'state' => $state, 'created_date' => $date))->get();
         return $query->num_rows();
     }
-    public function check_user_phone_for_campaign_limit($phone, $state)
+    public function check_user_phone_for_campaign_limit($state, $phone)
     {
         $query = $this->db->select('*')->from('register_user')->where(array('phone_number' => $phone, 'state' => $state))->get();
         return $query->num_rows();
@@ -185,6 +185,26 @@ class Main_Model extends CI_Model
         $query = $this->db->select('active_registration')->from('state_detail')->where('state', $state)->get();
         $res = $query->row();
         return $res->active_registration;
+    }
+    public function get_campaign_start_date($state)
+    {
+        $query = $this->db->select('campaign_start')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->campaign_start;
+    }
+    public function get_campaign_end_date($state)
+    {
+        $query = $this->db->select('campaign_end')->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->campaign_end;
+    }
+    public function update_user_case1($user_id, $coupon, $coupen_type, $giftcard_name, $gift_card_pin)
+    {
+        $this->db->where('id', $user_id)->update('register_user', array('redeem_coupon' => $coupon, 'coupon_type' => $coupen_type, 'redeem_giftcard_name' => $giftcard_name, 'redeem_giftcard_pin' => $gift_card_pin));
+    }
+    public function update_user_case2($user_id, $batchcode, $giftcard_name, $gift_card_pin)
+    {
+        $this->db->where('id', $user_id)->update('register_user', array('redeem_batchcode' => $batchcode, 'redeem_giftcard_name' => $giftcard_name, 'redeem_giftcard_pin' => $gift_card_pin));
     }
 }
 ?>
