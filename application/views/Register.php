@@ -77,6 +77,8 @@ if ($this->session->flashdata('error')) { ?>
     </div>
 
     <script>
+        let box = document.getElementById('batchCodeField');
+        box.style.display = 'none';
         $(document).ready(function () {
             document.getElementById('inputGroupSelect04').addEventListener('change', function () {
                 var selectedState = this.value;
@@ -96,9 +98,6 @@ if ($this->session->flashdata('error')) { ?>
                         } else if (data === 'code') {
                             couponField.style.display = 'none';
                             batchCodeField.style.display = 'block';
-                        } else if (data === 'coupon_giftcard') {
-                            couponField.style.display = 'block';
-                            batchCodeField.style.display = 'none';
                         }
                         else {
                             couponField.style.display = 'block';

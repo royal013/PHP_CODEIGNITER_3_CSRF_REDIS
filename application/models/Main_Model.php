@@ -23,7 +23,6 @@ class Main_Model extends CI_Model
         $row = $query->row();
         return $row->type;
     }
-
     public function get_all($state, $val)
     {
         $query = $this->db->select('*')->from('gift_card')->where(array('State' => $state, 'amount' => $val, 'is_used' => '0'))->order_by('RAND()')->limit(1)->get();
@@ -69,7 +68,6 @@ class Main_Model extends CI_Model
         $this->db->insert('register_user', $data);
         return $this->db->insert_id();
     }
-
     public function check_state_status($state)
     {
         $query = $this->db->select('isActive')->from('state_detail')->where('state', $state)->get();
@@ -142,8 +140,6 @@ class Main_Model extends CI_Model
         $time = date('H:i:s');
         $this->db->insert('redeemed_details', array('user_id' => $user_id, 'redeemed_coupon/batchcode' => $coupon, 'redeemed_giftcard_id' => $gift_card_id, 'redeemed_date' => $date, 'redeemed_time' => $time));
     }
-
-
     public function check_user_phone_for_daily_limit($phone, $state)
     {
         date_default_timezone_set('Asia/Kolkata');
@@ -222,6 +218,33 @@ class Main_Model extends CI_Model
         } else {
             return false;
         }
+    }
+    public function get_threshold($threshold_type, $state)
+    {
+        $query = $this->db->select($threshold_type)->from('state_detail')->where('state', $state)->get();
+        $row = $query->row();
+        return $row->$threshold_type;
+    }
+
+    public function get_coupon_type_count($state, $coupon_type, $threshold_type)
+    {
+        $query = $this->db->select($threshold_type)->from('state_detail')->where('state', $state)->get();
+        $res = $query->row();
+        return $res->$threshold_type;
+    }
+    public function update_coupon_type_count($state, $coupen_type)
+    {
+        $threshold_type = '';
+        if ($coupen_type === 'quart') {
+            $threshold_type = 'quart_redeemed_count';
+        } else if ($coupen_type === 'pint') {
+            $threshold_type = 'pint_redeemed_count';
+        } else if ($coupen_type === 'nip') {
+            $threshold_type = 'nip_redeemed_count';
+        }
+        $query = $this->db->set($threshold_type, $threshold_type . '+ 1', false)->where('state', $state)->update('state_detail');
+
+
     }
 }
 ?>

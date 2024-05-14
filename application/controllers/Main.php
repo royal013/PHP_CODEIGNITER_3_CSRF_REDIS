@@ -53,6 +53,9 @@ class Main extends CI_Controller
     $min_age = $this->Main_Model->get_minimum_age($state);
     $daily_limit = $this->Main_Model->get_daily_limit($state);
     $campaign_limit = $this->Main_Model->get_campaign_limit($state);
+    $quart_threshold = $this->Main_Model->get_threshold('quart_threshold', $state);
+    $pint_threshold = $this->Main_Model->get_threshold('pint_threshold', $state);
+    $nip_threshold = $this->Main_Model->get_threshold('nip_threshold', $state);
     if (strlen($phone) != 10) {
       $this->session->set_flashdata('error', 'Phone Number Invalid');
       redirect(base_url('register'));
@@ -120,17 +123,34 @@ class Main extends CI_Controller
         redirect(base_url('register'));
         exit();
       }
-
       $coupen_type = $this->Main_Model->get_coupen_type($state, $coupon);
       $val = 0;
       switch ($coupen_type) {
         case 'quart':
+          $coupen_type_count = $this->Main_Model->get_coupon_type_count($state, $coupen_type, 'quart_redeemed_count');
+          if ($coupen_type_count >= $quart_threshold) {
+            $this->session->set_flashdata('error', 'Quart Threshold Reached');
+            redirect(base_url('register'));
+            exit();
+          }
           $val = $this->Main_Model->get_quart_val($state);
           break;
         case 'pint':
+          $coupen_type_count = $this->Main_Model->get_coupon_type_count($state, $coupen_type, 'pint_redeemed_count');
+          if ($coupen_type_count >= $pint_threshold) {
+            $this->session->set_flashdata('error', 'Pint Threshold Reached');
+            redirect(base_url('register'));
+            exit();
+          }
           $val = $this->Main_Model->get_pint_val($state);
           break;
         case 'nip':
+          $coupen_type_count = $this->Main_Model->get_coupon_type_count($state, $coupen_type, 'nip_redeemed_count');
+          if ($coupen_type_count >= $nip_threshold) {
+            $this->session->set_flashdata('error', 'Nip Threshold Reached');
+            redirect(base_url('register'));
+            exit();
+          }
           $val = $this->Main_Model->get_nip_val($state);
           break;
         default:
@@ -144,6 +164,7 @@ class Main extends CI_Controller
         $this->Main_Model->update_total_registration($state);
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
         $this->Main_Model->update_coupon_card($state, $coupon, $user_id);
+        $this->Main_Model->update_coupon_type_count($state, $coupen_type);
         $this->Main_Model->update_user_case1($user_id, $coupon, $coupen_type, $output['product_name'], $output['card_pin']);
         // $this->Main_Model->redeemed_details($user_id, $coupon, $output['id']);
         $this->load->view('ThankYou');
