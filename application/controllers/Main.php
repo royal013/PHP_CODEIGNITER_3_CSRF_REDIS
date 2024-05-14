@@ -21,16 +21,28 @@ class Main extends CI_Controller
     $val = $this->Main_Model->getStateType($type);
     echo $val;
   }
-
+  public function check_campaign_dates($state)
+  {
+    date_default_timezone_set('Asia/Kolkata');
+    $time = date('H:i:s');
+    $date = date('Y-m-d');
+    $startDate = $this->Main_Model->get_campaign_start_date($state);
+    $endDate = $this->Main_Model->get_campaign_end_date($state);
+    if ($date < $startDate) {
+      return 0;
+    }
+    if ($date > $endDate) {
+      return 1;
+    }
+    return 2;
+  }
+ 
   public function register_with_coupon()
   {
     if (!$this->input->method(TRUE) === 'POST') {
       show_error('Only POST requests are allowed for this method.', 400);
       return;
     }
-    date_default_timezone_set('Asia/Kolkata');
-    $time = date('H:i:s');
-    $date = date('Y-m-d');
     $fname = $this->input->post('fname', TRUE);
     $lname = $this->input->post('lname', TRUE);
     $phone = $this->input->post('phone', TRUE);
@@ -56,20 +68,13 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
-    $startDate = $this->Main_Model->get_campaign_start_date($state);
-    $endDate = $this->Main_Model->get_campaign_end_date($state);
-    // if (!($date >= $startDate && $date <= $endDate)) {
-    //   $this->session->set_flashdata('error', 'Limit from this phone number exceeded');
-    //   redirect(base_url('register'));
-    //   exit();
-    // }
-    if ($date < $startDate) {
-      $this->session->set_flashdata('error', 'Campaign Not Started');
+    if ($this->check_campaign_dates($state) === 0) {
+      $this->session->set_flashdata('error', 'Campaign not started');
       redirect(base_url('register'));
       exit();
     }
-    if ($date > $endDate) {
-      $this->session->set_flashdata('error', 'Campaign Ended');
+    if ($this->check_campaign_dates($state) === 1) {
+      $this->session->set_flashdata('error', 'Campaign ended');
       redirect(base_url('register'));
       exit();
     }
@@ -154,6 +159,7 @@ class Main extends CI_Controller
   }
   public function register_with_batchcode()
   {
+
     if (!$this->input->method(TRUE) === 'POST') {
       show_error('Only POST requests are allowed for this method.', 400);
       return;
@@ -179,6 +185,16 @@ class Main extends CI_Controller
     }
     if (!$fname || !$lname || !$phone || !$age || !$batchcode || !$state) {
       $this->session->set_flashdata('error', 'All fields are required');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 0) {
+      $this->session->set_flashdata('error', 'Campaign not started');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 1) {
+      $this->session->set_flashdata('error', 'Campaign ended');
       redirect(base_url('register'));
       exit();
     }
@@ -274,6 +290,16 @@ class Main extends CI_Controller
       redirect(base_url('register'));
       exit();
     }
+    if ($this->check_campaign_dates($state) === 0) {
+      $this->session->set_flashdata('error', 'Campaign not started');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 1) {
+      $this->session->set_flashdata('error', 'Campaign ended');
+      redirect(base_url('register'));
+      exit();
+    }
     if ($this->session->userdata($state . $phone) >= 1) {
       $this->session->set_flashdata('error', 'Limit from this phone number exceeded');
       redirect(base_url('register'));
@@ -335,7 +361,7 @@ class Main extends CI_Controller
       exit();
     }
   }
-  public function no_giftcard()
+  public function no_giftcard()  //take registration but no giftcard using coupon
   {
     if (!$this->input->method(TRUE) === 'POST') {
       show_error('Only POST requests are allowed for this method.', 400);
@@ -363,6 +389,16 @@ class Main extends CI_Controller
     }
     if (!$fname || !$lname || !$phone || !$age || !$coupon || !$state) {
       $this->session->set_flashdata('error', 'All fields are required');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 0) {
+      $this->session->set_flashdata('error', 'Campaign not started');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 1) {
+      $this->session->set_flashdata('error', 'Campaign ended');
       redirect(base_url('register'));
       exit();
     }
@@ -401,6 +437,7 @@ class Main extends CI_Controller
       $count = $this->session->userdata($state . $phone);
       $this->session->set_userdata($state . $phone, $count + 1);
       $this->Main_Model->update_coupon_card($coupon, $user_id);
+      $this->Main_Model->update_user_case4($user_id, $coupon);
       $this->load->view('ThankYou');
 
     } else {
@@ -437,6 +474,16 @@ class Main extends CI_Controller
     }
     if (!$fname || !$lname || !$phone || !$age || !$coupon || !$state) {
       $this->session->set_flashdata('error', 'All fields are required');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 0) {
+      $this->session->set_flashdata('error', 'Campaign not started');
+      redirect(base_url('register'));
+      exit();
+    }
+    if ($this->check_campaign_dates($state) === 1) {
+      $this->session->set_flashdata('error', 'Campaign ended');
       redirect(base_url('register'));
       exit();
     }
@@ -501,7 +548,7 @@ class Main extends CI_Controller
       if ($output) {
         $this->Main_Model->update_gift_card_val($output['id'], $user_id);
         $this->Main_Model->update_coupon_card($coupon, $user_id);
-        $this->Main_Model->redeemed_details($user_id, $coupon, $output['id']);
+        $this->Main_Model->update_user_case1($user_id, $coupon, $coupen_type, $output['product_name'], $output['card_pin']);
         $this->load->view('ThankYou');
         // echo $this->session->userdata($state . $phone);
         // echo '<pre>';
@@ -509,7 +556,7 @@ class Main extends CI_Controller
         // echo '</pre>';
       } else {
         $this->Main_Model->update_coupon_card($coupon, $user_id);
-        $this->Main_Model->redeemed_details($user_id, $coupon, $output['id']);
+        $this->Main_Model->update_user_case4($user_id, $coupon);
         $this->load->view('ThankYou');
       }
     } else {

@@ -206,5 +206,13 @@ class Main_Model extends CI_Model
     {
         $this->db->where('id', $user_id)->update('register_user', array('redeem_batchcode' => $batchcode, 'redeem_giftcard_name' => $giftcard_name, 'redeem_giftcard_pin' => $gift_card_pin));
     }
+    public function update_user_case3($user_id, $coupon, $giftcard_name, $gift_card_pin)
+    {
+        $this->db->where('id', $user_id)->update('register_user', array('redeem_coupon' => $coupon, 'redeem_giftcard_name' => $giftcard_name, 'redeem_giftcard_pin' => $gift_card_pin));
+    }
+    public function update_user_case4($user_id, $coupon)
+    {
+        $this->db->where('id', $user_id)->update('register_user', array('redeem_coupon' => $coupon));
+    }
 }
 ?>
