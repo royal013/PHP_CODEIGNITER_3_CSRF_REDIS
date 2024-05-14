@@ -57,15 +57,15 @@ $route[''] = 'UploadCSV/index';
 $route['register'] = 'Main/load_register_page';
 
 //coupon_logic
-$route['AS'] = 'Main/register_with_coupon';
-$route['TR'] = 'Main/register_with_coupon';
+$route['as'] = 'Main/register_with_coupon';
+$route['tr'] = 'Main/register_with_coupon';
 
 //batchcode_logic
-$route['RJ'] = 'Main/register_with_batchcode';
-$route['MP'] = 'Main/register_with_batchcode';
+$route['rj'] = 'Main/register_with_batchcode';
+$route['mp'] = 'Main/register_with_batchcode';
 
 //coupon_validate_and_direct_giftcard
-$route['HR'] = 'Main/direct_giftcard';
+$route['hr'] = 'Main/direct_giftcard';
 
 //coupon_validate_and_registration_no_giftcard
-$route['WB'] = 'Main/no_giftcard';
+$route['wb'] = 'Main/no_giftcard';

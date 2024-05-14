@@ -52,12 +52,12 @@ if ($this->session->flashdata('error')) { ?>
                         <select class="form-select" id="inputGroupSelect04"
                             aria-label="Example select with button addon" name='state' required>
                             <option value=''>Choose...</option>
-                            <option value="AS">Assam</option>
-                            <option value="TR">Tripura</option>
-                            <option value="RJ">Rajasthan</option>
-                            <option value="MP">Madhya Pradesh</option>
-                            <option value="HR">Haryana</option>
-                            <option value="WB">West Bengal</option>
+                            <option value="as">Assam</option>
+                            <option value="tr">Tripura</option>
+                            <option value="rj">Rajasthan</option>
+                            <option value="mp">Madhya Pradesh</option>
+                            <option value="hr">Haryana</option>
+                            <option value="wb">West Bengal</option>
                         </select>
                     </div>
                     <div class="mb-3" id="couponField">

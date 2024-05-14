@@ -1,25 +1,25 @@
 <?php
 class Main_Model extends CI_Model
 {
-    public function verify_coupon($coupon)
+    public function verify_coupon($state, $coupon)
     {
-        $query = $this->db->select("*")->from("coupons")->where('coupon', $coupon)->where('is_used', '0')->get();
+        $query = $this->db->select("*")->from($state)->where('coupon', $coupon)->where('is_used', '0')->get();
         if ($query->num_rows() > 0) {
             return true;
         } else {
             return false;
         }
     }
-    public function update_coupon_card($coupon, $user_id)
+    public function update_coupon_card($state, $coupon, $user_id)
     {
         date_default_timezone_set('Asia/Kolkata');
         $time = date('H:i:s');
         $date = date('Y:m:d');
-        $this->db->where('coupon', $coupon)->update('coupons', array('user_id' => $user_id, 'is_used' => '1', 'used_date' => $date, 'used_time' => $time));
+        $this->db->where('coupon', $coupon)->update($state, array('user_id' => $user_id, 'is_used' => '1', 'used_date' => $date, 'used_time' => $time));
     }
-    public function get_coupen_type($coupon)
+    public function get_coupen_type($state, $coupon)
     {
-        $query = $this->db->select('type')->from('coupons')->where('coupon', $coupon)->get();
+        $query = $this->db->select('type')->from($state)->where('coupon', $coupon)->get();
         $row = $query->row();
         return $row->type;
     }
@@ -213,6 +213,15 @@ class Main_Model extends CI_Model
     public function update_user_case4($user_id, $coupon)
     {
         $this->db->where('id', $user_id)->update('register_user', array('redeem_coupon' => $coupon));
+    }
+    public function validate_coupon($state, $coupon)
+    {
+        $query = $this->db->select('*')->from($state)->where('coupon', $coupon)->get();
+        if ($query->num_rows() > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 ?>
